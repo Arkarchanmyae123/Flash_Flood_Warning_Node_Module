@@ -62,3 +62,50 @@ void all_spi_devices_start(void)
     //open flash chip slect 
     flash_specific_pins_config();
 }
+
+// chip select for lora
+void lora_select(void)
+{
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+}
+void lora_deselect(void)
+{
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+}
+
+// chip select for flash mem
+void flash_mem_select(void)
+{
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+}
+void flash_mem_deselect(void)
+{
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+}
+
+
+void lora_transmit_Tx(uint8_t *pData, uint16_t *size)
+{
+    lora_check_busy();
+
+    lora_select();
+
+    HAL_SPI_Transmit(&hspi1, pData, size, HAL_MAX_DELAY);
+
+    lora_deselect();
+
+    lora_check_busy();
+}
+
+void lora_reccive_Rx(uint8_t *pData, uint16_t *size)
+{
+    lora_check_busy();
+
+    lora_select();
+
+    HAL_SPI_Receive(&hspi1, pData, size, HAL_MAX_DELAY);
+
+    lora_deselect();
+
+    lora_check_busy();
+}

@@ -78,7 +78,7 @@ int rtc_config(void)
 
     __HAL_RCC_RTC_ENABLE();
     hrtc.Instance = RTC;
-    hrtc.Init.HourFormat = 24;
+    hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
     hrtc.Init.AsynchPrediv = 127;
     hrtc.Init.SynchPrediv = 255;
     hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
@@ -96,7 +96,8 @@ int main(void)
 {
     HAL_Init();
     system_clock_config();
-
+    rtc_config();
+    
     all_spi_devices_start();
 
     gps_start();

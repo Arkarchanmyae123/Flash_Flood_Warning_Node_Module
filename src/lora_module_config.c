@@ -91,3 +91,11 @@ void lora_reset(void)
 //     lora_sck_scl_mosi_miso_config();
 //     lora_cs_config();
 // }
+
+void lora_check_busy(void)
+{
+   while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET)
+   {
+
+   }
+}
