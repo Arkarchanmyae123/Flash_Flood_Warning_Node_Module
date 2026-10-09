@@ -19,10 +19,8 @@
 void flash_mem_cs_config(void)
 {
     /*
-    Flash Memory အလုပ်မလုပ်သေးချိန်တွင်
-    အမြဲတမ်း HIGH ဖြစ်နေစေရန် ကြိုတင်သတ်မှတ်ထားရပါမည်။ 
-    ဒေတာ သိမ်းမည်/ဖတ်မည် 
-    ဆိုမှသာ LOW သို့ ချပေးရပါမည်။
+    before Flash Memory work always HIGH  
+    when store data or del data make low
     */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
