@@ -109,3 +109,85 @@ void lora_reccive_Rx(uint8_t *pData, uint16_t *size)
 
     lora_check_busy();
 }
+
+void flash_mem_check_busy()
+{
+    uint8_t status_reg_cmd = 0x05; // Read Status Register-1 Command
+    uint8_t status_byte = 0;
+
+    do
+    {
+        flash_mem_select();
+
+        HAL_SPI_Transmit(&hspi1, &status_reg_cmd, 1, 100);
+        HAL_SPI_Receive(&hspi1, &status_byte, 1, 100);
+
+        flash_mem_deselect();
+
+    } while ((status_byte & 0x01) == 0x01);
+    
+}
+
+void flash_mem_del_data(uint32_t Address) //4KB sector erase function register is 0x20
+{
+    uint8_t write_open_cmd = 0x06; //write open register 
+    uint8_t del_cmd = 0x20;
+    uint8_t addr_bytes[3];
+
+    addr_bytes[0] = (Address >> 16) & 0xFF;
+    addr_bytes[1] = (Address >> 8) & 0xFF;
+    addr_bytes[2] = Address & 0xFF;
+
+    flash_mem_select();
+    HAL_SPI_Transmit(&hspi1, &write_open_cmd, 1, 100);
+    flash_mem_deselect();
+
+    flash_mem_select();
+    HAL_SPI_Transmit(&hspi1, &del_cmd, 1, 100);
+    HAL_SPI_Transmit(&hspi1, addr_bytes, 3, 100);
+    flash_mem_deselect();
+
+    flash_mem_check_busy();
+}
+
+void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t size)
+{
+    uint8_t write_open_cmd = 0x06;
+    uint8_t page_program_cmd =0x02; //page program cmd register
+    uint8_t addr_bytes[3];
+    
+    addr_bytes[0] = (Address >> 16) & 0xFF;
+    addr_bytes[1] = (Address >> 8) & 0xFF;
+    addr_bytes[2] = Address & 0xFF;
+
+    flash_mem_select();
+    HAL_SPI_Transmit(&hspi1, &write_open_cmd, 1, 100);
+    flash_mem_deselect();
+
+    flash_mem_select();
+    HAL_SPI_Transmit(&hspi1, &page_program_cmd, 1, 100);
+    HAL_SPI_Transmit(&hspi1, &addr_bytes, 3, 100);
+    HAL_SPI_Transmit(&hspi1, pData, size, HAL_MAX_DELAY);
+    flash_mem_deselect();
+
+    flash_mem_check_busy();
+
+}
+
+void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t size)
+{
+    uint8_t read_cmd = 0x03;
+    uint8_t addr_bytes[3];
+
+    addr_bytes[0] = (Address >> 16) & 0xFF;
+    addr_bytes[1] = (Address >> 8) & 0xFF;
+    addr_bytes[2] = Address & 0xFF;
+
+    flash_mem_select();
+    HAL_SPI_Transmit(&hspi1, &read_cmd, 1, 100);
+    HAL_SPI_Transmit(&hspi1, addr_bytes, 3, 100);
+
+    HAL_SPI_Receive(&hspi1, pBuffer, size, HAL_MAX_DELAY);
+
+    flash_mem_deselect();
+}
