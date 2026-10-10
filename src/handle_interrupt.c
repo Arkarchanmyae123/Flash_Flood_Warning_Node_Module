@@ -62,6 +62,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART1)
     {
         gps_process_byte(gps_rx_bytes);
-        HAL_UART_Receive_IT(huart, gps_rx_bytes, 1);
+        HAL_UART_Receive_IT(huart, &gps_rx_bytes, 1);
     }
 }
