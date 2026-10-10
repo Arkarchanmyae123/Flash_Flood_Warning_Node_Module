@@ -150,7 +150,7 @@ void flash_mem_del_data(uint32_t Address) //4KB sector erase function register i
     flash_mem_check_busy();
 }
 
-void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t size)
+void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t *size)
 {
     uint8_t write_open_cmd = 0x06;
     uint8_t page_program_cmd =0x02; //page program cmd register
@@ -174,7 +174,7 @@ void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t size)
 
 }
 
-void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t size)
+void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t *size)
 {
     uint8_t read_cmd = 0x03;
     uint8_t addr_bytes[3];

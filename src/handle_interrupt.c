@@ -1,6 +1,21 @@
 #include "hardware_connect.h"
 
 
+void SysTick_Handler(void){ 
+    HAL_IncTick();
+}
+
+void EXTI1_IRQHandler(void){ 
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1); 
+}// LoRa DIO1
+
+void EXTI4_IRQHandler(void){ 
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+}// Rain gauge
+
+
+
+
 
 void lora_DIO1_process_interrupt()
 {

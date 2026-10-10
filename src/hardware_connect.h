@@ -27,17 +27,9 @@ Battery Charger - TP5000 (2A LiFePO4 / Lithium Battery Charger IC)
 */
 
 
-void SysTick_Handler(void){ 
-    HAL_IncTick();
-}
-
-void EXTI1_IRQHandler(void){ 
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1); 
-}// LoRa DIO1
-
-void EXTI4_IRQHandler(void){ 
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
-}// Rain gauge
+/* system clock */
+int system_clock_config(void);
+int rtc_config(void);
 
 
 
@@ -55,6 +47,26 @@ void lora_busy_config(void);
 void lora_DIO1_config(void);
 void lora_reset(void);
 void lora_check_busy(void);
+HAL_StatusTypeDef spi1_init(void);
+void lora_select(void);
+void lora_deselect(void);
+void flash_mem_select(void);
+void flash_mem_deselect(void);
+
+/*
+ lora data transmission and reccive
+*/
+void lora_transmit_Tx(uint8_t *pData, uint16_t size);
+void lora_reccive_Rx(uint8_t *pData, uint16_t size);
+
+/*
+    flash memory operation
+*/
+void flash_mem_check_busy(void);
+void flash_mem_del_data(uint32_t Address);
+void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t size);
+void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t size);
+
 
 /*
     UART device GPS
@@ -72,6 +84,7 @@ HAL_StatusTypeDef tim2_init(void);
 HAL_StatusTypeDef tim2_ic_config(void);
 void JSN_SR04T_config(void);
 void rain_gauge_config(void);
-
-
+void lora_DIO1_process_interrupt(void);
+void rain_gauge_process_interrupt(void);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN);
 #endif
