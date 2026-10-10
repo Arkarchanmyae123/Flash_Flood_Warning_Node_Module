@@ -6,6 +6,9 @@
 //UART_1
 
 UART_HandleTypeDef uart_1;
+
+uint8_t gps_rx_bytes = 0;
+
 void gps_gpio_config(void)
 {
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -37,12 +40,50 @@ HAL_StatusTypeDef gps_uart_config(void)
 int gps_start(void)
 {
     gps_gpio_config();
-    if (gps_uart_config() == HAL_OK)
-    {
-        return 10;
-    }
-    else
+    gps_uart_config();
+
+    if (gps_uart_config() != HAL_OK)
     {
         return 11;
     }
+
+    HAL_NVIC_SetPriority(USART1_IRQn, 2, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
+
+    if (HAL_UART_Receive_IT(&uart_1, &gps_rx_bytes, 1) != HAL_OK)
+    {
+        return 11;
+    }
+    return 10;
+}
+
+//gps data translation function
+
+char gps_buffer[100];
+uint8_t gps_index = 0;
+uint8_t is_collecting = 0;
+
+void gps_process_byte(uint8_t byte)
+{
+    if (byte == '$')
+    {
+        gps_index = 0;
+        is_collecting = 1;
+        gps_buffer[gps_index++] = byte;
+    }
+    else if (is_collecting)
+    {
+        if (gps_index < sizeof(gps_buffer) - 1)
+        {
+            gps_buffer[gps_index++] = byte;
+        }
+        if (byte == '\n')
+        {
+            gps_buffer[gps_index] = '\0';
+            is_collecting = 0;
+
+            gps_parser(gps_buffer);
+        }
+    }
+
 }

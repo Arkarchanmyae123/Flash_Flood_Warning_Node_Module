@@ -14,9 +14,6 @@ void EXTI4_IRQHandler(void){
 }// Rain gauge
 
 
-
-
-
 void lora_DIO1_process_interrupt()
 {
 
@@ -49,4 +46,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN)
         lora_DIO1_process_interrupt();
     }
 
+}
+
+
+//gps part
+
+void USART1_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&uart_1);
+}
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART1)
+    {
+        gps_process_byte(gps_rx_bytes);
+        HAL_UART_Receive_IT(huart, gps_rx_bytes, 1);
+    }
 }

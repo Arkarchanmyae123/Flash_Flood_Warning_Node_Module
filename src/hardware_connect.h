@@ -64,17 +64,20 @@ void lora_reccive_Rx(uint8_t *pData, uint16_t size);
 */
 void flash_mem_check_busy(void);
 void flash_mem_del_data(uint32_t Address);
-void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t size);
-void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t size);
+void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t *size);
+void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t *size);
 
 
 /*
     UART device GPS
 */
+extern gps_rx_bytes;
 extern UART_HandleTypeDef uart_1;
 void gps_gpio_config(void);
 HAL_StatusTypeDef gps_uart_config(void);
+void gps_process_byte(uint8_t *gps_data);
 int gps_start(void);
+
 
 /*
     sensor using tim2
