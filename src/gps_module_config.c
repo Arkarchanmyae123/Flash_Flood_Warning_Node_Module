@@ -88,15 +88,16 @@ void gps_process_byte(uint8_t byte)
 }
 
 //field 2 error code 11
-char filed_1[15]; //time
+char field_1[15]; //time
 char field_2[2]; // status for satllite 'A' active 'V' no active
 char field_3[15]; // lat
 char field_4[2]; // NS north south
 char field_5[15]; // lon
 char field_6[2]; // EW east west
 // field 3 and 5 lat and lon
-float lat;
-float lon;
+
+GPS_Data_t gps_data_1;
+
 int gps_parser(char *nmea_str)
 {
     int comma_count = 0;
@@ -113,8 +114,8 @@ int gps_parser(char *nmea_str)
             }
             if (comma_count == 1)
             {
-                filed_1[char_index++] = nmea_str[i];
-                filed_1[char_index] = '\0';
+                field_1[char_index++] = nmea_str[i];
+                field_1[char_index] = '\0';
             }
             else if (comma_count == 2)
             {
@@ -145,7 +146,7 @@ int gps_parser(char *nmea_str)
         }
         if (field_2[0] == 'A')
         {
-
+            gps_data_1.is_valid = 1;
             char lat_deg[3];
             char lat_min[8];
 
@@ -181,13 +182,17 @@ int gps_parser(char *nmea_str)
                 lon_degree = lon_degree * (-1.0f);
             }
 
+            gps_data_1.latitude = lat_degree;
+            gps_data_1.longitude = lon_degree;
+            
             return (10);
         }
         else
         {
+            gps_data_1.is_valid = 0;
             return (11);
         }
-        return (10);
     }
+    return (1);//not "$GNRMC"
 
 }
