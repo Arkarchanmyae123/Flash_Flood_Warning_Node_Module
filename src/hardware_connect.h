@@ -57,7 +57,7 @@ void gps_gpio_config(void);
 HAL_StatusTypeDef gps_uart_config(void);
 int gps_start(void);
 void gps_process_byte(uint8_t byte);
-void gps_parser(char *sentence); // NMEA to Decimal Function 
+int gps_parser(char *nmea_str); // NMEA to Decimal Function 
 
 
 /*
@@ -91,8 +91,8 @@ void lora_reccive_Rx(uint8_t *pData, uint16_t size);
 */
 void flash_mem_check_busy(void);
 void flash_mem_del_data(uint32_t Address);
-void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t *size);
-void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t *size);
+void flash_mem_write_data(uint32_t Address, uint8_t *pData, uint16_t size);
+void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t size);
 
 
 /*
