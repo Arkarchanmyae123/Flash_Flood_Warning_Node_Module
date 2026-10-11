@@ -20,12 +20,11 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         {
             T1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
             flag = 1;
-            __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_1, TIM_INPUTCHANNELPOLARITY_RISING);
+            __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_1, TIM_INPUTCHANNELPOLARITY_FALLING);
         }
         else if (flag == 1)
         {
             T2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-             __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_1, TIM_INPUTCHANNELPOLARITY_FALLING);
 
             if (T2 > T1)
             {
@@ -54,7 +53,7 @@ void delay_micro_sec(uint16_t micro_sec)
     }
 }
 
-void read_water_level()
+void read_water_level(void)
 {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
     delay_micro_sec(10);

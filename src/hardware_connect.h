@@ -1,9 +1,9 @@
-#ifndef hardware_h
-#define hardware_h
+#ifndef HARDWARE_H
+#define HARDWARE_H
 
 #include "stm32l4xx_hal.h"
-#include "stdint.h"
-#include "stdio.h"
+#include <stdint.h>
+#include <stdio.h>
 #include <stddef.h> 
 /*
 board - NUCLEO-L452RE
@@ -26,103 +26,11 @@ Battery Charger - TP5000 (2A LiFePO4 / Lithium Battery Charger IC)
     Error = 11
 */
 
-//string manipulation function
-int	ft_strncmp(const char *s1, const char *s2, size_t n)
-{
-	size_t	i;
+// string utils function 
+int	ft_strncmp(const char *s1, const char *s2, size_t n);
+double ft_atof(const char *str);
+void	*ft_memcpy_idx(void *dest, const void *src, size_t start, size_t n);
 
-	i = 0;
-	while (i < n && s1[i] != '\0' && s2[i] != '\0' && s1[i] == s2[i])
-	{
-		i++;
-	}
-	if (n == i)
-	{
-		return (0);
-	}
-	return (s1[i] - s2[i]);
-}
-
-double ft_atof(const char *str)
-{
-    double result = 0.0;
-    double factor = 1.0;
-    int sign = 1;
-
-    if (!str)
-        return 0.0;
-
-    while (*str == ' ' || (*str >= 9 && *str <= 13))
-        str++;
-
-    if (*str == '-' || *str == '+')
-    {
-        if (*str == '-')
-            sign = -1;
-        str++;
-    }
-
-    while (*str >= '0' && *str <= '9')
-    {
-        result = result * 10.0 + (*str - '0');
-        str++;
-    }
-
-    if (*str == '.')
-    {
-        str++;
-        while (*str >= '0' && *str <= '9')
-        {
-            factor *= 0.1;
-            result += (*str - '0') * factor;
-            str++;
-        }
-    }
-
-    return result * sign;
-}
-
-
-// void	*ft_memcpy(void *dest, const void *src, size_t n)
-// {
-// 	unsigned char		*d;
-// 	const unsigned char	*s;
-// 	size_t				i;
-
-// 	d = dest;
-// 	s = src;
-// 	if (d == NULL && s == NULL)
-// 		return (NULL);
-// 	i = 0;
-// 	while (i < n)
-// 	{
-// 		d[i] = s[i];
-// 		i++;
-// 	}
-// 	return (dest);
-// }
-
-
-void	*ft_memcpy_idx(void *dest, const void *src, size_t start, size_t n)
-{
-	unsigned char		*d;
-	const unsigned char	*s;
-	size_t				i;
-
-	d = dest;
-	s = (const unsigned char *)src + start; 
-	
-	if (d == NULL || src == NULL)
-		return (NULL);
-
-	i = 0;
-	while (i < n)
-	{
-		d[i] = s[i];
-		i++;
-	}
-	return (dest);
-}
 
 
 /* system clock */
@@ -190,7 +98,6 @@ void flash_mem_read_data(uint32_t Address, uint8_t *pBuffer, uint16_t *size);
 /*
     UART device GPS
 */
-extern gps_rx_bytes;
 extern UART_HandleTypeDef uart_1;
 void gps_gpio_config(void);
 HAL_StatusTypeDef gps_uart_config(void);
@@ -208,4 +115,10 @@ void rain_gauge_config(void);
 void lora_DIO1_process_interrupt(void);
 void rain_gauge_process_interrupt(void);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN);
+
+//read water level function 
+void TIM_IC_IT_start(void);
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim);
+void delay_micro_sec(uint16_t micro_sec);
+void read_water_level(void);
 #endif
