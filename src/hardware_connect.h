@@ -50,7 +50,7 @@ typedef struct {
 
 extern UART_HandleTypeDef uart_1;
 extern uint8_t gps_rx_bytes;
-extern GPS_Data_t current_gps;
+GPS_Data_t gps_data_1;
 
 
 void gps_gpio_config(void);
