@@ -2,13 +2,16 @@
 
 uint16_t T1 = 0;
 uint16_t T2 = 0;
-uint16_t time_diff = 0;
+uint32_t time_diff = 0;
 uint16_t flag = 0;
 float water_level = 0.0f;
 
 void TIM_IC_IT_start(void)
 {
+    HAL_NVIC_SetPriority(TIM2_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(TIM2_IRQn);
     HAL_TIM_IC_Start_IT(&tim_2, TIM_CHANNEL_1);
+
 }
 
 
@@ -32,7 +35,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
             }
             else
             {
-                time_diff = (0xFFFF - T1) + T2;
+                time_diff = (0xFFFFFFFF - T1) + T2;
             }
             water_level = (time_diff * 0.0343) / 2;
 

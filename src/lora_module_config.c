@@ -92,10 +92,18 @@ void lora_reset(void)
 //     lora_cs_config();
 // }
 
-void lora_check_busy(void)
+int lora_check_busy(void)
 {
-   while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET)
-   {
+    uint32_t start_time = HAL_GetTick();
 
-   }
+    while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET)
+    {
+        if (HAL_GetTick() - start_time >= 500)
+        {
+            return TIMEOUT;
+        }
+
+    }
+    return RET_OK;
+
 }

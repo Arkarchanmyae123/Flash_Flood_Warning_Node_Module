@@ -68,6 +68,7 @@ void lora_select(void)
 {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 }
+
 void lora_deselect(void)
 {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
@@ -84,30 +85,56 @@ void flash_mem_deselect(void)
 }
 
 
-void lora_transmit_Tx(uint8_t *pData, uint16_t size)
+int lora_transmit_Tx(uint8_t *pData, uint16_t size)
 {
-    lora_check_busy();
-
+    
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
     lora_select();
-
-    HAL_SPI_Transmit(&hspi1, pData, size, HAL_MAX_DELAY);
-
+    
+    HAL_StatusTypeDef tx_status =  HAL_SPI_Transmit(&hspi1, pData, size, LORA_RX_TX_TIMEOUT);
+    
     lora_deselect();
 
-    lora_check_busy();
+    if (tx_status != HAL_OK)
+    {
+        return RET_ERROR;
+    }
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    return RET_OK;
+
 }
 
-void lora_reccive_Rx(uint8_t *pData, uint16_t size)
+int lora_reccive_Rx(uint8_t *pData, uint16_t size)
 {
-    lora_check_busy();
-
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
     lora_select();
-
-    HAL_SPI_Receive(&hspi1, pData, size, HAL_MAX_DELAY);
+    HAL_StatusTypeDef rx_status = HAL_SPI_Receive(&hspi1, pData, size, LORA_RX_TX_TIMEOUT);
 
     lora_deselect();
 
-    lora_check_busy();
+    if (rx_status != HAL_OK)
+    {
+        return RET_ERROR;
+    }
+
+    if (lora_check_busy != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    return RET_OK;
+
 }
 
 void flash_mem_check_busy()

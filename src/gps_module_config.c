@@ -95,8 +95,7 @@ char field_4[2]; // NS north south
 char field_5[15]; // lon
 char field_6[2]; // EW east west
 // field 3 and 5 lat and lon
-
-
+GPS_Data_t gps_data_1;
 
 int gps_parser(char *nmea_str)
 {

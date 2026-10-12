@@ -10,7 +10,7 @@ HAL_StatusTypeDef tim2_init(void)
     __HAL_RCC_TIM2_CLK_ENABLE();
 
     tim_2.Instance = TIM2;
-    tim_2.Init.Prescaler = 3;
+    tim_2.Init.Prescaler = 15;
     tim_2.Init.CounterMode = TIM_COUNTERMODE_UP;
     tim_2.Init.Period = 0xFFFFFFFF;
     tim_2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
