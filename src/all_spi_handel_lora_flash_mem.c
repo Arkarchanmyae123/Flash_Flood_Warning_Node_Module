@@ -187,7 +187,99 @@ int lora_read_buffer(uint8_t offset, uint8_t *pBuffer, uint8_t size)
     return RET_OK;
 }
 
+int lora_clear_irq_status(uint16_t mask)
+{
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_OK;
+    }
 
+    //uint8_t cmd[3] = {0x02, (uint8_t)mask >> 8, (uint8_t)mask & 0xFF};
+    uint8_t cmd[3];
+            cmd[0] = 0x02;
+            cmd[1] = (u_int8_t)mask >> 8;
+            cmd[2] = (uint8_t)mask & 0xFF;
+
+    lora_select();
+
+    HAL_SPI_Transmit(&hspi1, cmd, 3, LORA_RX_TX_TIMEOUT);
+
+    lora_deselect();
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_OK;
+    }
+
+    return RET_OK;
+
+}
+
+
+int lora_send_packet(uint8_t *pData, uint8_t size)
+{
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    uint8_t cmd_1[2] = {0x80, 0x00};
+    lora_select();
+    HAL_SPI_Transmit(&hspi1, cmd_1, 2, LORA_RX_TX_TIMEOUT);
+    lora_deselect();
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    uint8_t cmd_2[3] = {0x8F, 0x00, 0x00};
+    lora_select();
+    HAL_SPI_Transmit(&hspi1, cmd_2, 3, LORA_RX_TX_TIMEOUT);
+    lora_deselect();
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    lora_write_buffer(0x00, pData, size);
+
+    uint8_t cmd_3[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};
+    lora_select();
+    HAL_SPI_Transmit(&hspi1, cmd_3, 7, LORA_RX_TX_TIMEOUT);
+    lora_deselect();
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    uint8_t cmd_4[4] = {0x83, 0x00, 0x00, 0x00};
+    lora_select();
+    HAL_SPI_Transmit(&hspi1, cmd_4, 4, LORA_RX_TX_TIMEOUT);
+    lora_deselect();
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    uint32_t start_time = HAL_GetTick();
+    while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET)
+    {
+        if ((HAL_GetTick() - start_time) >= 500)
+        {
+            return TIMEOUT;
+        }
+    }
+
+    lora_clear_irq_status(0x0001);
+
+    return RET_OK;
+
+}
 
 
 
