@@ -216,76 +216,125 @@ int lora_clear_irq_status(uint16_t mask)
 }
 
 
-int lora_send_packet(uint8_t *pData, uint8_t size)
+// int lora_send_packet(uint8_t *pData, uint8_t size)
+// {
+
+//     if (lora_check_busy() != RET_OK)
+//     {
+//         return RET_ERROR;
+//     }
+
+//     uint8_t cmd_1[2] = {0x80, 0x00};
+//     lora_select();
+//     HAL_SPI_Transmit(&hspi1, cmd_1, 2, LORA_RX_TX_TIMEOUT);
+//     lora_deselect();
+
+//     if (lora_check_busy() != RET_OK)
+//     {
+//         return RET_ERROR;
+//     }
+
+//     uint8_t cmd_2[3] = {0x8F, 0x00, 0x00};
+//     lora_select();
+//     HAL_SPI_Transmit(&hspi1, cmd_2, 3, LORA_RX_TX_TIMEOUT);
+//     lora_deselect();
+
+//     if (lora_check_busy() != RET_OK)
+//     {
+//         return RET_ERROR;
+//     }
+
+//     lora_write_buffer(0x00, pData, size);
+
+//     uint8_t cmd_3[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};
+//     lora_select();
+//     HAL_SPI_Transmit(&hspi1, cmd_3, 7, LORA_RX_TX_TIMEOUT);
+//     lora_deselect();
+
+//     if (lora_check_busy() != RET_OK)
+//     {
+//         return RET_ERROR;
+//     }
+
+//     uint8_t cmd_4[4] = {0x83, 0x00, 0x00, 0x00};
+//     lora_select();
+//     HAL_SPI_Transmit(&hspi1, cmd_4, 4, LORA_RX_TX_TIMEOUT);
+//     lora_deselect();
+
+//     if (lora_check_busy() != RET_OK)
+//     {
+//         return RET_ERROR;
+//     }
+
+//     uint32_t start_time = HAL_GetTick();
+//     while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET)
+//     {
+//         if ((HAL_GetTick() - start_time) >= 500)
+//         {
+//             return TIMEOUT;
+//         }
+//     }
+
+//     lora_clear_irq_status(0x0001);
+
+//     return RET_OK;
+
+// }
+
+
+static int lora_cmd(uint8_t *buf, uint16_t len)
 {
-
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-
-    uint8_t cmd_1[2] = {0x80, 0x00};
     lora_select();
-    HAL_SPI_Transmit(&hspi1, cmd_1, 2, LORA_RX_TX_TIMEOUT);
+    HAL_StatusTypeDef st = HAL_SPI_Transmit(&hspi1, buf, len, 100);
     lora_deselect();
-
-    if (lora_check_busy() != RET_OK)
+    
+    if (st != HAL_OK) 
     {
         return RET_ERROR;
     }
-
-    uint8_t cmd_2[3] = {0x8F, 0x00, 0x00};
-    lora_select();
-    HAL_SPI_Transmit(&hspi1, cmd_2, 3, LORA_RX_TX_TIMEOUT);
-    lora_deselect();
-
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-
-    lora_write_buffer(0x00, pData, size);
-
-    uint8_t cmd_3[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};
-    lora_select();
-    HAL_SPI_Transmit(&hspi1, cmd_3, 7, LORA_RX_TX_TIMEOUT);
-    lora_deselect();
-
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-
-    uint8_t cmd_4[4] = {0x83, 0x00, 0x00, 0x00};
-    lora_select();
-    HAL_SPI_Transmit(&hspi1, cmd_4, 4, LORA_RX_TX_TIMEOUT);
-    lora_deselect();
-
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-
-    uint32_t start_time = HAL_GetTick();
-    while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET)
-    {
-        if ((HAL_GetTick() - start_time) >= 500)
-        {
-            return TIMEOUT;
-        }
-    }
-
-    lora_clear_irq_status(0x0001);
-
-    return RET_OK;
-
+    
+    return lora_check_busy();
 }
 
 
+int lora_send_packet(uint8_t *pData, uint8_t size)
+{
+    if (lora_check_busy() != RET_OK) return RET_ERROR;
 
+    uint8_t standby[2]  = {0x80, 0x00};// SetStandby
+    uint8_t bufbase[3]  = {0x8F, 0x00, 0x00};// SetBufferBaseAddress
+    uint8_t pktparam[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};// SetPacketParams
+    uint8_t irq[9]      = {0x08, 0x02, 0x01, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00}; // SetDioIrqParams
+    uint8_t settx[4]    = {0x83, 0x00, 0x00, 0x00}; // SetTx
 
+    if (lora_cmd(standby, 2) != RET_OK) return RET_ERROR;
+    if (lora_cmd(bufbase, 3) != RET_OK) return RET_ERROR;
 
+    if (lora_write_buffer(0x00, pData, size) != RET_OK) return RET_ERROR;
 
+    if (lora_cmd(pktparam, 7) != RET_OK) return RET_ERROR;
+    if (lora_cmd(irq, 9)      != RET_OK) return RET_ERROR;
+
+    lora_clear_irq_status(0x03FF); 
+
+    if (lora_cmd(settx, 4) != RET_OK) return RET_ERROR;
+
+    uint32_t start_time = HAL_GetTick();
+    
+    while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET)
+    {
+        if ((HAL_GetTick() - start_time) >= 2000)
+        {
+            lora_cmd(standby, 2);
+            lora_clear_irq_status(0x03FF);
+            return RET_ERROR;
+        }
+    }
+
+    lora_clear_irq_status(0x03FF);
+
+    return RET_OK;
+}
 
 
 
