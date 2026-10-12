@@ -137,6 +137,89 @@ int lora_reccive_Rx(uint8_t *pData, uint16_t size)
 
 }
 
+
+int lora_write_buffer(uint8_t offset, uint8_t *pData, uint8_t size)
+{
+   if (lora_check_busy() != RET_OK)
+   {
+    return RET_ERROR;
+   }
+
+   uint8_t cmd[2] = {0x0E, offset};
+
+   lora_select();
+
+   HAL_SPI_Transmit(&hspi1, cmd, 2, LORA_RX_TX_TIMEOUT);
+   HAL_SPI_Transmit(&hspi1, pData, size, LORA_RX_TX_TIMEOUT);
+
+   lora_deselect();
+
+   if (lora_check_busy() != RET_OK)
+   {
+    return RET_ERROR;
+   }
+   return RET_OK;
+
+}
+
+
+int lora_read_buffer(uint8_t offset, uint8_t *pBuffer, uint8_t size)
+{
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    uint8_t cmd[3] = {0x1E, offset, 0x00};
+
+    lora_select();
+
+    HAL_SPI_Transmit(&hspi1, cmd, 3, LORA_RX_TX_TIMEOUT);
+    HAL_SPI_Receive(&hspi1, pBuffer, size, LORA_RX_TX_TIMEOUT);
+
+    lora_deselect();
+
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+
+    return RET_OK;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void flash_mem_check_busy()
 {
     uint8_t status_reg_cmd = 0x05; // Read Status Register-1 Command
