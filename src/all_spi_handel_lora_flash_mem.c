@@ -147,7 +147,6 @@ int lora_clear_irq_status(uint16_t mask)
             cmd[0] = 0x02;
             cmd[1] = (uint8_t)mask >> 8;
             cmd[2] = (uint8_t)mask & 0xFF;
-
     lora_select();
 
     HAL_SPI_Transmit(&hspi1, cmd, 3, LORA_RX_TX_TIMEOUT);
@@ -162,6 +161,7 @@ int lora_clear_irq_status(uint16_t mask)
     return RET_OK;
 
 }
+
 
 
 static int lora_cmd(uint8_t *buf, uint16_t len)
