@@ -85,58 +85,6 @@ void flash_mem_deselect(void)
 }
 
 
-int lora_transmit_Tx(uint8_t *pData, uint16_t size)
-{
-    
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-    lora_select();
-    
-    HAL_StatusTypeDef tx_status =  HAL_SPI_Transmit(&hspi1, pData, size, LORA_RX_TX_TIMEOUT);
-    
-    lora_deselect();
-
-    if (tx_status != HAL_OK)
-    {
-        return RET_ERROR;
-    }
-
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-
-    return RET_OK;
-
-}
-
-int lora_reccive_Rx(uint8_t *pData, uint16_t size)
-{
-    if (lora_check_busy() != RET_OK)
-    {
-        return RET_ERROR;
-    }
-    lora_select();
-    HAL_StatusTypeDef rx_status = HAL_SPI_Receive(&hspi1, pData, size, LORA_RX_TX_TIMEOUT);
-
-    lora_deselect();
-
-    if (rx_status != HAL_OK)
-    {
-        return RET_ERROR;
-    }
-
-    if (lora_check_busy != RET_OK)
-    {
-        return RET_ERROR;
-    }
-
-    return RET_OK;
-
-}
-
 
 int lora_write_buffer(uint8_t offset, uint8_t *pData, uint8_t size)
 {
@@ -197,7 +145,7 @@ int lora_clear_irq_status(uint16_t mask)
     //uint8_t cmd[3] = {0x02, (uint8_t)mask >> 8, (uint8_t)mask & 0xFF};
     uint8_t cmd[3];
             cmd[0] = 0x02;
-            cmd[1] = (u_int8_t)mask >> 8;
+            cmd[1] = (uint8_t)mask >> 8;
             cmd[2] = (uint8_t)mask & 0xFF;
 
     lora_select();
@@ -214,72 +162,6 @@ int lora_clear_irq_status(uint16_t mask)
     return RET_OK;
 
 }
-
-
-// int lora_send_packet(uint8_t *pData, uint8_t size)
-// {
-
-//     if (lora_check_busy() != RET_OK)
-//     {
-//         return RET_ERROR;
-//     }
-
-//     uint8_t cmd_1[2] = {0x80, 0x00};
-//     lora_select();
-//     HAL_SPI_Transmit(&hspi1, cmd_1, 2, LORA_RX_TX_TIMEOUT);
-//     lora_deselect();
-
-//     if (lora_check_busy() != RET_OK)
-//     {
-//         return RET_ERROR;
-//     }
-
-//     uint8_t cmd_2[3] = {0x8F, 0x00, 0x00};
-//     lora_select();
-//     HAL_SPI_Transmit(&hspi1, cmd_2, 3, LORA_RX_TX_TIMEOUT);
-//     lora_deselect();
-
-//     if (lora_check_busy() != RET_OK)
-//     {
-//         return RET_ERROR;
-//     }
-
-//     lora_write_buffer(0x00, pData, size);
-
-//     uint8_t cmd_3[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};
-//     lora_select();
-//     HAL_SPI_Transmit(&hspi1, cmd_3, 7, LORA_RX_TX_TIMEOUT);
-//     lora_deselect();
-
-//     if (lora_check_busy() != RET_OK)
-//     {
-//         return RET_ERROR;
-//     }
-
-//     uint8_t cmd_4[4] = {0x83, 0x00, 0x00, 0x00};
-//     lora_select();
-//     HAL_SPI_Transmit(&hspi1, cmd_4, 4, LORA_RX_TX_TIMEOUT);
-//     lora_deselect();
-
-//     if (lora_check_busy() != RET_OK)
-//     {
-//         return RET_ERROR;
-//     }
-
-//     uint32_t start_time = HAL_GetTick();
-//     while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET)
-//     {
-//         if ((HAL_GetTick() - start_time) >= 500)
-//         {
-//             return TIMEOUT;
-//         }
-//     }
-
-//     lora_clear_irq_status(0x0001);
-
-//     return RET_OK;
-
-// }
 
 
 static int lora_cmd(uint8_t *buf, uint16_t len)
@@ -337,10 +219,21 @@ int lora_send_packet(uint8_t *pData, uint8_t size)
 }
 
 
+int lora_recive_packet(uint8_t *pBuffer, uint8_t size)
+{
+    if (lora_check_busy() != RET_OK)
+    {
+        return RET_ERROR;
+    }
+    uint8_t Buffer_Base_Addr[3] = {0x8F, 0x00, 0x00};
+    uint8_t Buffer_Base_Addr[2] = {0x8F, 0x00};
+    uint8_t PacketParams[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};
+    uint8_t DioIrqParams[9] = {0x08, 0x02, 0x62, 0x02, 0x62, 0x00, 0x00, 0x00, 0x00};
+    uint8_t SetRx[4] = {0x82, 0x01, 0xF4, 0x00};
+    uint8_t tx_buf[4] = {0x12, 0x00, 0x00, 0x00};
+    uint8_t rx_buf[4];
 
-
-
-
+}
 
 
 

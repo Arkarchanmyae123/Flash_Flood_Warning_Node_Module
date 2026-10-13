@@ -3,21 +3,6 @@
 //LoRa Module - 868MHz LoRa Module (SX1262)
 
 
-// void lora_sck_scl_mosi_miso_config()
-// {
-//     //lora module sx1262 use gpioA and gpioB
-//     __HAL_RCC_GPIOA_CLK_ENABLE();
-
-//     GPIO_InitTypeDef gpioA = {0};
-
-//     gpioA.Mode = GPIO_MODE_AF_PP;
-//     gpioA.Pin = GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7; //SCK and SCL one line PA5 and pa6 and pa7 miso and mosi
-//     gpioA.Pull = GPIO_NOPULL;
-//     gpioA.Speed = GPIO_SPEED_FREQ_HIGH;
-//     gpioA.Alternate = GPIO_AF5_SPI1;
-//     HAL_GPIO_Init(GPIOA, &gpioA);
-
-// }
 
 void lora_cs_config(void)
 {
@@ -85,12 +70,6 @@ void lora_reset(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
-
-// void lora_start()
-// {
-//     lora_sck_scl_mosi_miso_config();
-//     lora_cs_config();
-// }
 
 int lora_check_busy(void)
 {
