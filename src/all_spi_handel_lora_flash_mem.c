@@ -23,7 +23,6 @@ HAL_StatusTypeDef spi1_init(void)
 }
 
 
-
 void shared_spi1_pins_config(void)
 {
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -187,7 +186,7 @@ int lora_send_packet(uint8_t *pData, uint8_t size)
     uint8_t bufbase[3]  = {0x8F, 0x00, 0x00};// SetBufferBaseAddress
     uint8_t pktparam[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};// SetPacketParams
     uint8_t irq[9]      = {0x08, 0x02, 0x01, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00}; // SetDioIrqParams
-    uint8_t settx[4]    = {0x83, 0x00, 0x00, 0x00}; // SetTx
+    uint8_t set_tx[4]    = {0x83, 0x00, 0x00, 0x00}; // SetTx
 
     if (lora_cmd(standby, 2) != RET_OK) return RET_ERROR;
     if (lora_cmd(bufbase, 3) != RET_OK) return RET_ERROR;
@@ -199,7 +198,7 @@ int lora_send_packet(uint8_t *pData, uint8_t size)
 
     lora_clear_irq_status(0x03FF); 
 
-    if (lora_cmd(settx, 4) != RET_OK) return RET_ERROR;
+    if (lora_cmd(set_tx, 4) != RET_OK) return RET_ERROR;
 
     uint32_t start_time = HAL_GetTick();
     
@@ -219,19 +218,103 @@ int lora_send_packet(uint8_t *pData, uint8_t size)
 }
 
 
-int lora_recive_packet(uint8_t *pBuffer, uint8_t size)
+
+
+int lora_receive_packet(uint8_t *pBuffer, uint8_t size, uint8_t *received_len)
 {
     if (lora_check_busy() != RET_OK)
     {
         return RET_ERROR;
     }
+    uint8_t standby[2]  = {0x80, 0x00};
     uint8_t Buffer_Base_Addr[3] = {0x8F, 0x00, 0x00};
-    uint8_t Buffer_Base_Addr[2] = {0x8F, 0x00};
     uint8_t PacketParams[7] = {0x8C, 0x00, 0x08, 0x00, size, 0x01, 0x00};
     uint8_t DioIrqParams[9] = {0x08, 0x02, 0x62, 0x02, 0x62, 0x00, 0x00, 0x00, 0x00};
     uint8_t SetRx[4] = {0x82, 0x01, 0xF4, 0x00};
     uint8_t tx_buf[4] = {0x12, 0x00, 0x00, 0x00};
     uint8_t rx_buf[4];
+    uint8_t Tx_buffer_status[4] = {0x13, 0x00, 0x00, 0x00};
+    uint8_t Rx_buff_status[4];
+
+    if (lora_cmd(standby, 2) != RET_OK) return RET_ERROR;
+
+    if (lora_cmd(Buffer_Base_Addr, 3) != RET_OK) return RET_ERROR;
+
+    //if (lora_read_buffer(0x00, pBuffer, size) != RET_OK) return RET_ERROR;
+
+    if (lora_cmd(PacketParams, 7) != RET_OK) return RET_ERROR;
+    if (lora_cmd(DioIrqParams, 9) != RET_OK) return RET_ERROR;
+
+    lora_clear_irq_status(0x3FF);
+
+    if (lora_cmd(SetRx, 4) != RET_OK) return RET_ERROR;
+
+    uint32_t start_time = HAL_GetTick();
+
+    while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET)
+    {
+        if ((HAL_GetTick() - start_time) >= 2500)
+        {
+            lora_cmd(standby, 2);
+            lora_clear_irq_status(0x3FF);
+            return RET_ERROR;
+        }
+
+    }
+
+    if (lora_check_busy() != RET_OK)return RET_ERROR;
+
+    lora_select();
+   if (HAL_SPI_TransmitReceive(&hspi1, tx_buf, rx_buf, 4, 100) != HAL_OK)
+   {
+        lora_deselect();
+        return HAL_ERROR;
+   }
+    lora_deselect();
+
+    uint16_t irq_status =  ((rx_buf[2] << 8) | rx_buf[3]);
+
+    if (irq_status & 0x0260)
+    {
+        lora_clear_irq_status(0x03FF);
+        return RET_ERROR;
+    }
+
+    if (!(irq_status & 0x0002))
+    {
+        lora_clear_irq_status(0x03FF);
+        return RET_ERROR;
+    }
+
+    lora_clear_irq_status(0x3FF);
+
+    if (lora_check_busy() != RET_OK) return RET_ERROR;
+
+    lora_select();
+    if (HAL_SPI_TransmitReceive(&hspi1, Tx_buffer_status, Rx_buff_status, 4, 100) != HAL_OK)
+    {
+        lora_deselect();
+        return HAL_ERROR;
+    }
+    lora_deselect();
+
+    uint8_t length = Rx_buff_status[2];
+    uint8_t start = Rx_buff_status[3];
+
+    if (length == 0)
+    {
+        return RET_ERROR;
+    }
+    if (length > size)
+    {
+        length = size;
+    }
+   if (lora_read_buffer(start, pBuffer, length) != RET_OK) return RET_ERROR;
+
+   *received_len = length;
+
+
+    return RET_OK;
 
 }
 

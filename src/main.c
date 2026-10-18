@@ -1,7 +1,6 @@
 #include "stm32l4xx_hal.h"
 #include "hardware_connect.h"
 
-
 /*
 board - NUCLEO-L452RE
 RTC - 32.768 kHz Crystal Oscillator
