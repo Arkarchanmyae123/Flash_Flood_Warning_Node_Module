@@ -144,17 +144,22 @@ int lora_clear_irq_status(uint16_t mask)
     //uint8_t cmd[3] = {0x02, (uint8_t)mask >> 8, (uint8_t)mask & 0xFF};
     uint8_t cmd[3];
             cmd[0] = 0x02;
-            cmd[1] = (uint8_t)mask >> 8;
-            cmd[2] = (uint8_t)mask & 0xFF;
+            cmd[1] = (uint8_t)(mask >> 8);
+            cmd[2] = (uint8_t)(mask & 0xFF);
     lora_select();
 
-    HAL_SPI_Transmit(&hspi1, cmd, 3, LORA_RX_TX_TIMEOUT);
+   HAL_StatusTypeDef st = HAL_SPI_Transmit(&hspi1, cmd, 3, LORA_RX_TX_TIMEOUT);
 
     lora_deselect();
 
+    if (st != HAL_OK)
+    {
+        return HAL_ERROR;
+    }
+
     if (lora_check_busy() != RET_OK)
     {
-        return RET_OK;
+        return RET_ERROR;
     }
 
     return RET_OK;
